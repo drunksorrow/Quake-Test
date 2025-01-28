@@ -11,36 +11,11 @@ echo "Updating 'apt-get'..."
 apt-get update
 clear
 echo "Installing packages..."
-apt-get -y install apache2 python3 python-setuptools lib32gcc1 curl nano samba build-essential python-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6
+apt-get -y install apache2 python3 python-setuptools lib32gcc1 curl nano samba build-essential python-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev
 clear
 
-# Install ZeroMQ library with fallback for downloading.
-ZERO_MQ_VERSION="4.1.4"
-ZERO_MQ_TAR="zeromq-${ZERO_MQ_VERSION}.tar.gz"
-ZERO_MQ_URL="https://github.com/zeromq/libzmq/releases/download/v${ZERO_MQ_VERSION}/${ZERO_MQ_TAR}"
-
-echo "Installing ZeroMQ library..."
-
-# Check if ZeroMQ tar file already exists, if not, attempt to download it.
-if [ ! -f "$ZERO_MQ_TAR" ]; then
-    echo "Downloading ZeroMQ from GitHub..."
-    wget "$ZERO_MQ_URL" -O "$ZERO_MQ_TAR"
-    if [ $? -ne 0 ]; then
-        echo "Failed to download ZeroMQ from GitHub. Please download it manually from $ZERO_MQ_URL and place it in the current directory."
-        exit 1
-    fi
-fi
-
-# Extract and install ZeroMQ
-tar -xvzf "$ZERO_MQ_TAR" || { echo "Failed to extract ZeroMQ tarball."; exit 1; }
-rm "$ZERO_MQ_TAR"
-cd "zeromq-${ZERO_MQ_VERSION}" || { echo "Failed to change to ZeroMQ directory."; exit 1; }
-./configure --without-libsodium || { echo "ZeroMQ configure failed."; exit 1; }
-make install || { echo "ZeroMQ make install failed."; exit 1; }
-cd ..
-rm -r "zeromq-${ZERO_MQ_VERSION}"
-
 # Install Python ZeroMQ binding
+echo "Installing Python ZeroMQ bindings..."
 easy_install pyzmq || { echo "Failed to install pyzmq."; exit 1; }
 
 clear
