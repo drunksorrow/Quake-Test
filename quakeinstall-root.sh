@@ -11,12 +11,12 @@ echo "Updating 'apt-get'..."
 apt-get update
 clear
 echo "Installing packages..."
-apt-get -y install apache2 python3 python-setuptools lib32gcc1 curl nano samba build-essential python-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev
+apt-get -y install apache2 python3 python3-dev lib32gcc1 curl nano samba build-essential python3-pip unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev
 clear
 
-# Install Python ZeroMQ binding
+# Install Python ZeroMQ binding using pip
 echo "Installing Python ZeroMQ bindings..."
-easy_install pyzmq || { echo "Failed to install pyzmq."; exit 1; }
+pip3 install pyzmq || { echo "Failed to install pyzmq."; exit 1; }
 
 clear
 echo "Adding user 'qlserver'..."
@@ -46,7 +46,7 @@ echo "Enter the password to use for user 'qlserver' in Samba:"
 smbpasswd -a qlserver
 clear
 echo "Installing Supervisor..."
-easy_install supervisor
+pip3 install supervisor
 clear
 echo "All work done for 'root' user, please login to 'qlserver'."
 exit
