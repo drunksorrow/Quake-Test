@@ -11,8 +11,14 @@ echo "Updating 'apt-get'..."
 apt-get update
 clear
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-dev lib32gcc1 curl nano samba build-essential python3-pip unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev
+apt-get -y install apache2 python3 python3-dev lib32gcc1 curl nano samba build-essential unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev
 clear
+
+# Ensure pip3 is installed
+if ! command -v pip3 &> /dev/null; then
+    echo "pip3 not found, installing..."
+    apt-get -y install python3-pip
+fi
 
 # Install Python ZeroMQ binding using pip
 echo "Installing Python ZeroMQ bindings..."
