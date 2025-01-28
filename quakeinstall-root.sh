@@ -1,39 +1,53 @@
 #!/bin/bash
 
-# Setăm locația fișierului ZeroMQ
-ZEROMQ_FILE="zeromq-4.1.4.tar.gz"
+# Check if ZeroMQ is already downloaded
+if [ ! -f "zeromq-4.1.4.tar.gz" ]; then
+    echo "ZeroMQ not found, attempting to download manually..."
+    
+    # Try downloading ZeroMQ from alternative sources
+    wget http://download.zeromq.org/zeromq-4.1.4.tar.gz || echo "Download from the official server failed, trying GitHub..."
 
-# Verificăm dacă ZeroMQ este deja descărcat
-if [ ! -f "$ZEROMQ_FILE" ]; then
-  echo "ZeroMQ nu a fost găsit, încercăm să-l descărcăm..."
+    # Try GitHub as an alternative
+    wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz || echo "Download from GitHub failed."
 
-  # Încercăm să descărcăm ZeroMQ de pe serverul oficial
-  wget http://download.zeromq.org/zeromq-4.1.4.tar.gz -O "$ZEROMQ_FILE"
-
-  if [ $? -ne 0 ]; then
-    echo "Descărcarea ZeroMQ de pe serverul oficial a eșuat, încercăm GitHub..."
-
-    # Încercăm să descărcăm ZeroMQ de pe GitHub
-    wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz -O "$ZEROMQ_FILE"
-
-    if [ $? -ne 0 ]; then
-      echo "Descărcarea ZeroMQ a eșuat. Te rugăm să-l descarci manual de la https://github.com/zeromq/libzmq/releases și să-l plasezi în directorul curent."
-      exit 1
+    # Check if ZeroMQ was successfully downloaded
+    if [ ! -f "zeromq-4.1.4.tar.gz" ]; then
+        echo "ZeroMQ download failed. Please download it manually from https://github.com/zeromq/libzmq/releases and place it in the current directory."
+        exit 1
     fi
-  fi
-else
-  echo "Fișierul ZeroMQ există deja: $ZEROMQ_FILE"
 fi
 
-# Extragem și instalăm ZeroMQ
-echo "Descarcăm și instalăm ZeroMQ..."
-tar -xvf $ZEROMQ_FILE
+# Extract the ZeroMQ archive
+echo "Extracting ZeroMQ..."
+tar -xvzf zeromq-4.1.4.tar.gz
+
+# Navigate into the extracted directory
 cd zeromq-4.1.4
+
+# Install dependencies required for building
+echo "Installing required dependencies..."
+sudo apt-get update
+sudo apt-get install -y build-essential libtool pkg-config
+
+# Compile and install ZeroMQ
+echo "Compiling and installing ZeroMQ..."
 ./configure
 make
 sudo make install
 
-# Actualizăm cache-ul bibliotecii
+# Reload shared libraries
+echo "Reloading libraries..."
 sudo ldconfig
 
-echo "Instalarea ZeroMQ a fost completă!"
+# Continue with Quake-Test installation
+cd /root/Quake-Test
+
+# Install other dependencies required for Quake-Test
+echo "Installing dependencies for Quake-Test..."
+sudo apt-get install -y libsdl2-dev libcurl4-openssl-dev
+
+# Proceed with Quake-Test installation
+echo "Installing Quake-Test..."
+# Add the necessary commands for installing Quake-Test here (e.g., clone the Quake-Test repository or run other installation commands)
+
+echo "Installation completed successfully!"
