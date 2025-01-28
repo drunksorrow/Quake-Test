@@ -1,19 +1,35 @@
-#! /bin/bash
-# quakeinstall-qlserver.sh - Quake Live dedicated server installation for qlserver user on Ubuntu 24.04.
+#!/bin/bash
+# quakeinstall-root.sh - Install Quake Live server on Ubuntu 24.04 for root user
 
-if [ "$(whoami)" != "qlserver" ]; then
-  echo "Please run this script as the 'qlserver' user."
-  exit 1
+echo "Updating 'apt-get'..."
+sudo apt-get update -y
+
+echo "Installing required packages..."
+sudo apt-get -y install libc6:i386 zlib1g:i386 build-essential git
+
+echo "Checking and installing 32-bit libraries..."
+if ! dpkg --print-architecture | grep -q "i386"; then
+  sudo dpkg --add-architecture i386
+  sudo apt-get update
 fi
 
-echo "Installing SteamCMD..."
-mkdir -p ~/steamcmd
-cd ~/steamcmd || exit
-wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
-tar -xvzf steamcmd_linux.tar.gz
-rm steamcmd_linux.tar.gz
+echo "Installing required dependencies..."
+sudo apt-get -y install libc6:i386 zlib1g:i386
 
-echo "Installing Quake Live Dedicated Server..."
-./steamcmd.sh +login anonymous +force_install_dir ~/steamcmd/steamapps/common/qlds/ +app_update 349090 +quit
+echo "Installing ZeroMQ library..."
+if ! wget http://download.zeromq.org/zeromq-4.1.4.tar.gz; then
+  echo "Failed to download ZeroMQ from the official server, trying manual download..."
+  wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz || {
+    echo "ZeroMQ download failed. Please download manually from https://github.com/zeromq/libzmq/releases and place it in your current directory."
+    exit 1
+  }
+fi
 
-echo "Server setup complete."
+# Dezarhivează și instalează ZeroMQ
+tar -xvzf zeromq-4.1.4.tar.gz
+cd zeromq-4.1.4 || exit
+./configure
+make
+sudo make install
+
+echo "Installation of dependencies completed successfully."
