@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 # quakeinstall-root.sh - Quake Live Dedicated Server installation for root user.
 
 if [ "$EUID" -ne 0 ]; then
@@ -11,18 +11,18 @@ echo "Updating 'apt-get'..."
 apt-get update
 clear
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-dev lib32gcc1 curl nano samba build-essential unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev
+apt-get -y install apache2 python3 python3-dev lib32gcc1 curl nano samba build-essential unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev pipx
 clear
 
-# Ensure pip3 is installed
+# Ensure pip3 and pipx are installed
 if ! command -v pip3 &> /dev/null; then
     echo "pip3 not found, installing..."
     apt-get -y install python3-pip
 fi
 
-# Install Python ZeroMQ binding using pip
-echo "Installing Python ZeroMQ bindings..."
-pip3 install pyzmq || { echo "Failed to install pyzmq."; exit 1; }
+# Install Python ZeroMQ binding using pipx (for a cleaner, isolated installation)
+echo "Installing Python ZeroMQ bindings with pipx..."
+pipx install pyzmq || { echo "Failed to install pyzmq with pipx."; exit 1; }
 
 clear
 echo "Adding user 'qlserver'..."
@@ -51,8 +51,8 @@ clear
 echo "Enter the password to use for user 'qlserver' in Samba:"
 smbpasswd -a qlserver
 clear
-echo "Installing Supervisor..."
-pip3 install supervisor
+echo "Installing Supervisor using pipx..."
+pipx install supervisor
 clear
 echo "All work done for 'root' user, please login to 'qlserver'."
 exit
