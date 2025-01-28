@@ -1,53 +1,100 @@
-#!/bin/bash
+#! /bin/bash
+# quakeinstall-root.sh - quake live dedicated server installation for root user.
 
-# Check if ZeroMQ is already downloaded
-if [ ! -f "zeromq-4.1.4.tar.gz" ]; then
-    echo "ZeroMQ not found, attempting to download manually..."
-    
-    # Try downloading ZeroMQ from alternative sources
-    wget http://download.zeromq.org/zeromq-4.1.4.tar.gz || echo "Download from the official server failed, trying GitHub..."
-
-    # Try GitHub as an alternative
-    wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz || echo "Download from GitHub failed."
-
-    # Check if ZeroMQ was successfully downloaded
-    if [ ! -f "zeromq-4.1.4.tar.gz" ]; then
-        echo "ZeroMQ download failed. Please download it manually from https://github.com/zeromq/libzmq/releases and place it in the current directory."
-        exit 1
-    fi
+# Ensure the script is run by the root user
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run this script as root."
+  exit 1
 fi
 
-# Extract the ZeroMQ archive
-echo "Extracting ZeroMQ..."
+clear
+echo "Updating 'apt-get'..."
+apt-get update -y
+
+clear
+echo "Installing required packages..."
+apt-get install -y \
+  apache2 \
+  python3 \
+  python3-setuptools \
+  lib32gcc1 \
+  curl \
+  nano \
+  samba \
+  build-essential \
+  python3-dev \
+  unzip \
+  dos2unix \
+  mailutils \
+  wget \
+  lib32z1 \
+  lib32stdc++6 \
+  libc6 \
+  python3-pip
+
+clear
+echo "Installing ZeroMQ library..."
+
+# Download ZeroMQ, handle potential download failure
+if ! wget http://download.zeromq.org/zeromq-4.1.4.tar.gz; then
+  echo "Primary ZeroMQ download failed, trying GitHub..."
+  wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz || {
+    echo "Failed to download ZeroMQ from both sources. Please download manually from https://github.com/zeromq/libzmq/releases and place it in the current directory.";
+    exit 1;
+  }
+fi
+
+# Extract, install and clean up ZeroMQ
 tar -xvzf zeromq-4.1.4.tar.gz
-
-# Navigate into the extracted directory
+rm zeromq-4.1.4.tar.gz
 cd zeromq-4.1.4
-
-# Install dependencies required for building
-echo "Installing required dependencies..."
-sudo apt-get update
-sudo apt-get install -y build-essential libtool pkg-config
-
-# Compile and install ZeroMQ
-echo "Compiling and installing ZeroMQ..."
-./configure
+./configure --without-libsodium
 make
-sudo make install
+make install
+cd ..
+rm -rf zeromq-4.1.4
 
-# Reload shared libraries
-echo "Reloading libraries..."
-sudo ldconfig
+# Install pyzmq
+pip3 install pyzmq
 
-# Continue with Quake-Test installation
-cd /root/Quake-Test
+clear
+echo "Adding user 'qlserver'..."
+useradd -m qlserver
+usermod -a -G sudo qlserver
+chsh -s /bin/bash qlserver
 
-# Install other dependencies required for Quake-Test
-echo "Installing dependencies for Quake-Test..."
-sudo apt-get install -y libsdl2-dev libcurl4-openssl-dev
+clear
+echo "Enter the password to use for the QLserver account:"
+passwd qlserver
 
-# Proceed with Quake-Test installation
-echo "Installing Quake-Test..."
-# Add the necessary commands for installing Quake-Test here (e.g., clone the Quake-Test repository or run other installation commands)
+clear
+echo "Adding user 'qlserver' to sudoers file, appending NOPASSWD..."
+echo "qlserver ALL = NOPASSWD: ALL" >> /etc/sudoers
 
-echo "Installation completed successfully!"
+clear
+echo "Stopping the Samba services..."
+systemctl stop smbd
+
+clear
+echo "Adding home directory sharing to Samba..."
+echo -e "\n[homes]\n    comment = Home Directories\n    browseable = yes\n    read only = no\n    writeable = yes\n    create mask = 0755\n    directory mask = 0755" >> /etc/samba/smb.conf
+
+clear
+echo "Adding 'www' directory sharing to Samba..."
+echo -e "\n[www]\n    comment = WWW Directory\n    path = /var/www\n    browseable = yes\n    read only = no\n    writeable = yes\n    create mask = 0755\n    directory mask = 0755" >> /etc/samba/smb.conf
+
+clear
+echo "Starting the Samba services..."
+systemctl start smbd
+
+clear
+echo "Enter the password to use for user 'qlserver' in Samba:"
+smbpasswd -a qlserver
+
+clear
+echo "Installing Supervisor (using pip3)..."
+pip3 install supervisor
+
+clear
+echo "All work done for 'root' user, please login to 'qlserver'."
+exit
