@@ -1,29 +1,39 @@
 #!/bin/bash
-# quakeinstall-qlserver.sh - Install Quake Live server for qlserver user
 
-if [ "$(whoami)" != "qlserver" ]; then
-  echo "Please run this script as the 'qlserver' user."
-  exit 1
+# Setăm locația fișierului ZeroMQ
+ZEROMQ_FILE="zeromq-4.1.4.tar.gz"
+
+# Verificăm dacă ZeroMQ este deja descărcat
+if [ ! -f "$ZEROMQ_FILE" ]; then
+  echo "ZeroMQ nu a fost găsit, încercăm să-l descărcăm..."
+
+  # Încercăm să descărcăm ZeroMQ de pe serverul oficial
+  wget http://download.zeromq.org/zeromq-4.1.4.tar.gz -O "$ZEROMQ_FILE"
+
+  if [ $? -ne 0 ]; then
+    echo "Descărcarea ZeroMQ de pe serverul oficial a eșuat, încercăm GitHub..."
+
+    # Încercăm să descărcăm ZeroMQ de pe GitHub
+    wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz -O "$ZEROMQ_FILE"
+
+    if [ $? -ne 0 ]; then
+      echo "Descărcarea ZeroMQ a eșuat. Te rugăm să-l descarci manual de la https://github.com/zeromq/libzmq/releases și să-l plasezi în directorul curent."
+      exit 1
+    fi
+  fi
+else
+  echo "Fișierul ZeroMQ există deja: $ZEROMQ_FILE"
 fi
 
-echo "Installing required packages for qlserver..."
-sudo apt-get update -y
-sudo apt-get -y install python3 python3-dev redis-server build-essential git
-
-echo "Cloning and compiling Quake Live server..."
-cd ~/steamcmd/steamapps/common/qlds || exit
-git clone https://github.com/MinoMino/minqlx.git
-cd minqlx || exit
+# Extragem și instalăm ZeroMQ
+echo "Descarcăm și instalăm ZeroMQ..."
+tar -xvf $ZEROMQ_FILE
+cd zeromq-4.1.4
+./configure
 make
-cp -r bin/* ..
+sudo make install
 
-echo "Installing Minqlx plugins and dependencies..."
-cd ~/steamcmd/steamapps/common/qlds || exit
-git clone https://github.com/MinoMino/minqlx-plugins.git
-wget https://bootstrap.pypa.io/get-pip.py
-python3 get-pip.py
-rm get-pip.py
-export PIP_BREAK_SYSTEM_PACKAGES=1  # For Debian 12+ users
-python3 -m pip install -r minqlx-plugins/requirements.txt
+# Actualizăm cache-ul bibliotecii
+sudo ldconfig
 
-echo "Minqlx setup is complete. Please configure it with your SteamID64."
+echo "Instalarea ZeroMQ a fost completă!"
