@@ -1,39 +1,39 @@
-#!/bin/bash
+#! /bin/bash
+# quakeinstall-qlserver.sh - quake live dedicated server installation for qlserver user.
 
-# Setăm locația fișierului ZeroMQ
-ZEROMQ_FILE="zeromq-4.1.4.tar.gz"
-
-# Verificăm dacă ZeroMQ este deja descărcat
-if [ ! -f "$ZEROMQ_FILE" ]; then
-  echo "ZeroMQ nu a fost găsit, încercăm să-l descărcăm..."
-
-  # Încercăm să descărcăm ZeroMQ de pe serverul oficial
-  wget http://download.zeromq.org/zeromq-4.1.4.tar.gz -O "$ZEROMQ_FILE"
-
-  if [ $? -ne 0 ]; then
-    echo "Descărcarea ZeroMQ de pe serverul oficial a eșuat, încercăm GitHub..."
-
-    # Încercăm să descărcăm ZeroMQ de pe GitHub
-    wget https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz -O "$ZEROMQ_FILE"
-
-    if [ $? -ne 0 ]; then
-      echo "Descărcarea ZeroMQ a eșuat. Te rugăm să-l descarci manual de la https://github.com/zeromq/libzmq/releases și să-l plasezi în directorul curent."
-      exit 1
-    fi
-  fi
-else
-  echo "Fișierul ZeroMQ există deja: $ZEROMQ_FILE"
+# Ensure the script is run by the 'qlserver' user
+if [ "$(whoami)" != "qlserver" ]; then
+  echo "Please run this script as the 'qlserver' user."
+  exit 1
 fi
 
-# Extragem și instalăm ZeroMQ
-echo "Descarcăm și instalăm ZeroMQ..."
-tar -xvf $ZEROMQ_FILE
-cd zeromq-4.1.4
-./configure
-make
-sudo make install
+clear
+echo "Installing SteamCMD..."
 
-# Actualizăm cache-ul bibliotecii
-sudo ldconfig
+# Ensure necessary tools are installed
+if ! command -v wget &> /dev/null || ! command -v tar &> /dev/null; then
+  echo "wget or tar is not installed. Installing necessary packages..."
+  sudo apt-get install -y wget tar
+fi
 
-echo "Instalarea ZeroMQ a fost completă!"
+# Create the SteamCMD directory and install SteamCMD
+mkdir -p ~/steamcmd
+cd ~/steamcmd
+wget -q https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+tar -xvzf steamcmd_linux.tar.gz
+rm steamcmd_linux.tar.gz
+
+clear
+echo "Installing Quake Live Dedicated Server..."
+
+# Use SteamCMD to install Quake Live Dedicated Server
+./steamcmd.sh +login anonymous +force_install_dir /home/qlserver/steamcmd/steamapps/common/qlds/ +app_update 349090 +quit
+
+clear
+# Uncomment and modify the cron job setup if you want automatic updates
+#echo "Setting up Cron job for automatic updates..."
+#echo "0 8 * * * /home/qlserver/quakeupdate.sh" | crontab -
+#clear
+
+echo "Quake Live Dedicated Server installation complete."
+exit
