@@ -1,34 +1,32 @@
-#!/bin/bash
-# quakeinstall-root.sh - Quake Live dedicated server installation for root user.
+#! /bin/bash
+# quakeinstall-root.sh - quake live dedicated server installation for root user.
 
-# Colors for messages
+# Culori pentru mesaje
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Success message function
+# Funcție pentru afișarea mesajelor de succes
 success() {
-  echo -e "${GREEN}[SUCCESS] $1${NC}"
+  echo -e "${GREEN}[SUCCES] $1${NC}"
 }
 
-# Warning message function
+# Funcție pentru afișarea mesajelor de avertizare
 warn() {
-  echo -e "${YELLOW}[WARNING] $1${NC}"
+  echo -e "${YELLOW}[AVERTIZARE] $1${NC}"
 }
 
-# Error message function
+# Funcție pentru afișarea mesajelor de eroare
 error() {
-  echo -e "${RED}[ERROR] $1${NC}"
+  echo -e "${RED}[EROARE] $1${NC}"
   exit 1
 }
 
-# Ensure the script is run as root
 if [ "$EUID" -ne 0 ]; then
   error "Please run under user 'root'."
 fi
 
-# Update apt-get
 echo "Updating 'apt-get'..."
 apt-get update
 if [ $? -eq 0 ]; then
@@ -37,16 +35,22 @@ else
   error "Failed to update apt-get."
 fi
 
-# Install required packages
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip libtool pkg-config gcc-9 g++-9
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip g++-12
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
   error "Failed to install packages."
 fi
 
-# Install ZeroMQ library
+echo "Setting g++-12 as default compiler..."
+export CXX=g++-12
+if [ $? -eq 0 ]; then
+  success "g++-12 set as default compiler."
+else
+  error "Failed to set g++-12 as default compiler."
+fi
+
 echo "Installing ZeroMQ library..."
 ZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz"
 ZMQ_FILE="zeromq-4.3.4.tar.gz"
@@ -72,11 +76,15 @@ fi
 
 if [ -d "$ZMQ_DIR" ]; then
   cd "$ZMQ_DIR"
-  
-  # Install GCC for avoiding conflicts with C++11
-  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90
-  update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
-  success "Using GCC 9 to compile."
+
+  echo "Applying patch for ZeroMQ..."
+  wget https://patch-diff.githubusercontent.com/raw/zeromq/libzmq/pull/4711.patch
+  patch -p1 < 4711.patch
+  if [ $? -eq 0 ]; then
+    success "Patch applied successfully."
+  else
+    warn "Failed to apply patch. Continuing without patch..."
+  fi
 
   ./configure --without-libsodium
   if [ $? -eq 0 ]; then
@@ -105,32 +113,14 @@ else
   error "ZeroMQ directory not found."
 fi
 
-# Installing pyzmq via pip3
 echo "Installing pyzmq via pip3..."
-
-# Check if the system is in a virtual environment
-if ! python3 -c 'import sys; print(sys.prefix)' | grep -q "env"; then
-  echo "Not in a virtual environment, installing pyzmq globally."
-  # Installing pyzmq system-wide using apt
-  apt-get install python3-pyzmq
-  if [ $? -eq 0 ]; then
-    success "pyzmq installed successfully."
-  else
-    error "Failed to install pyzmq via apt."
-  fi
+pip3 install pyzmq
+if [ $? -eq 0 ]; then
+  success "pyzmq installed successfully."
 else
-  echo "Inside virtual environment, installing pyzmq in venv."
-  source venv/bin/activate
-  pip install pyzmq
-  deactivate
-  if [ $? -eq 0 ]; then
-    success "pyzmq installed successfully in virtual environment."
-  else
-    error "Failed to install pyzmq in virtual environment."
-  fi
+  error "Failed to install pyzmq."
 fi
 
-# Adding user 'qlserver'
 echo "Adding user 'qlserver'..."
 useradd -m qlserver
 usermod -a -G sudo qlserver
@@ -143,7 +133,7 @@ else
   error "Failed to add user 'qlserver'."
 fi
 
-# Adding user 'qlserver' to sudoers with NOPASSWD
+echo "Adding user 'qlserver' to sudoers file, and appending NOPASSWD..."
 echo "qlserver ALL = NOPASSWD: ALL" >> /etc/sudoers
 if [ $? -eq 0 ]; then
   success "User 'qlserver' added to sudoers file successfully."
@@ -151,7 +141,6 @@ else
   error "Failed to add user 'qlserver' to sudoers file."
 fi
 
-# Stopping Samba services
 echo "Stopping the Samba services..."
 systemctl stop smbd
 if [ $? -eq 0 ]; then
@@ -160,7 +149,7 @@ else
   warn "Failed to stop Samba services."
 fi
 
-# Adding home directory sharing to Samba
+echo "Adding home directory sharing to Samba..."
 echo -e "\n[homes]\n    comment = Home Directories\n    browseable = yes\n    read only = no\n    writeable = yes\n    create mask = 0755\n    directory mask = 0755" >> /etc/samba/smb.conf
 if [ $? -eq 0 ]; then
   success "Home directory sharing added to Samba successfully."
@@ -168,7 +157,7 @@ else
   error "Failed to add home directory sharing to Samba."
 fi
 
-# Adding 'www' directory sharing to Samba
+echo "Adding 'www' directory sharing to Samba..."
 echo -e "\n[www]\n    comment = WWW Directory\n    path = /var/www\n    browseable = yes\n    read only = no\n    writeable = yes\n    create mask = 0755\n    directory mask = 0755" >> /etc/samba/smb.conf
 if [ $? -eq 0 ]; then
   success "'www' directory sharing added to Samba successfully."
@@ -176,7 +165,6 @@ else
   error "Failed to add 'www' directory sharing to Samba."
 fi
 
-# Starting Samba services
 echo "Starting the Samba services..."
 systemctl start smbd
 if [ $? -eq 0 ]; then
@@ -185,7 +173,6 @@ else
   warn "Failed to start Samba services."
 fi
 
-# Setting Samba password for 'qlserver'
 echo "Enter the password to use for user 'qlserver' in Samba:"
 smbpasswd -a qlserver
 if [ $? -eq 0 ]; then
