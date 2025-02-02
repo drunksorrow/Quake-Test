@@ -44,9 +44,9 @@ else
 fi
 
 echo "Installing ZeroMQ library..."
-ZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz"
-ZMQ_FILE="zeromq-4.1.4.tar.gz"
-ZMQ_DIR="zeromq-4.1.4"
+ZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz"
+ZMQ_FILE="zeromq-4.3.4.tar.gz"
+ZMQ_DIR="zeromq-4.3.4"
 
 wget "$ZMQ_URL" -O "$ZMQ_FILE"
 if [ $? -eq 0 ]; then
