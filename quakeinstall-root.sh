@@ -86,6 +86,31 @@ if [ -d "$ZMQ_DIR" ]; then
     warn "Failed to apply patch. Continuing without patch..."
   fi
 
+  # Aplicăm un patch pentru a corecta eroarea de compilare
+  echo "Applying additional patch to fix compilation error..."
+  cat << 'EOL' > fix_testutil_monitoring.patch
+diff --git a/tests/testutil_monitoring.cpp b/tests/testutil_monitoring.cpp
+index 1e5f5f5..f8e5f5f 100644
+--- a/tests/testutil_monitoring.cpp
++++ b/tests/testutil_monitoring.cpp
+@@ -249,7 +249,7 @@ int64_t get_monitor_event_internal_v2 (void *monitor_,
+     if (value_size_ == sizeof (uint64_t)) {
+         uint64_t *value_ = static_cast<uint64_t *> (value);
+         for (int i = 0; i < 2; i++) {
+-            if (value_ && value_ + i)
++            if (value_ && (value_ + i))
+                 value_[i] = static_cast<uint64_t> (ntohll (value_[i]));
+         }
+     }
+EOL
+
+  patch -p1 < fix_testutil_monitoring.patch
+  if [ $? -eq 0 ]; then
+    success "Additional patch applied successfully."
+  else
+    warn "Failed to apply additional patch. Continuing without patch..."
+  fi
+
   ./configure --without-libsodium
   if [ $? -eq 0 ]; then
     success "ZeroMQ configured successfully."
