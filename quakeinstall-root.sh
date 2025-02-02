@@ -36,7 +36,7 @@ else
 fi
 
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip g++-12 libbsd-dev libunwind-dev
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip g++-12 libbsd-dev libunwind-dev python3-venv
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
@@ -108,8 +108,16 @@ else
   error "ZeroMQ directory not found."
 fi
 
-echo "Installing pyzmq via pip3..."
-pip3 install pyzmq
+echo "Creating Python virtual environment..."
+python3 -m venv /opt/qlserver-venv
+if [ $? -eq 0 ]; then
+  success "Python virtual environment created successfully."
+else
+  error "Failed to create Python virtual environment."
+fi
+
+echo "Activating Python virtual environment and installing pyzmq..."
+source /opt/qlserver-venv/bin/activate && pip install pyzmq
 if [ $? -eq 0 ]; then
   success "pyzmq installed successfully."
 else
