@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 # quakeinstall-root.sh - quake live dedicated server installation for root user.
 
 if [ "$EUID" -ne 0 ]
@@ -7,16 +7,23 @@ if [ "$EUID" -ne 0 ]
 fi
 
 clear
-echo "Updating 'apt'..."
-apt update
+echo "Updating 'apt-get'..."
+apt-get update
 
 clear
 echo "Installing packages..."
-apt -y install apache2 python3 python3-setuptools lib32gcc1 curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6
+apt-get -y install apache2 python3 python3-setuptools lib32gcc1 curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6
 
 clear
 echo "Installing ZeroMQ library..."
-apt -y install libzmq3-dev
+wget https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz
+tar -xvzf zeromq-4.3.4.tar.gz
+rm zeromq-4.3.4.tar.gz
+cd zeromq-4.3.4
+./configure --without-libsodium
+make install
+cd ..
+rm -r zeromq-4.3.4
 pip3 install pyzmq
 
 clear
@@ -54,7 +61,7 @@ smbpasswd -a qlserver
 
 clear
 echo "Installing Supervisor..."
-apt -y install supervisor
+pip3 install supervisor
 
 clear
 echo "All work done for 'root' user, please login to 'qlserver'."
