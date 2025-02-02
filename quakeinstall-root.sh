@@ -33,7 +33,7 @@ apt-get update || error "Nu s-a putut actualiza 'apt-get'."
 success "'apt-get' actualizat cu succes."
 
 echo -e "${YELLOW}Instalare pachete...${NC}"
-apt-get -y install apache2 python3 python3-setuptools lib32gcc1 curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 || error "Nu s-au putut instala pachetele."
+apt-get -y install apache2 python3 python3-setuptools lib32gcc-s1 curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 || error "Nu s-au putut instala pachetele."
 success "Pachete instalate cu succes."
 
 echo -e "${YELLOW}Instalare ZeroMQ...${NC}"
