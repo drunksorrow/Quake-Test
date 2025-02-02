@@ -39,7 +39,7 @@ fi
 
 # Install required packages
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip libtool pkg-config
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip libtool pkg-config gcc-9 g++-9
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
@@ -74,7 +74,6 @@ if [ -d "$ZMQ_DIR" ]; then
   cd "$ZMQ_DIR"
   
   # Install GCC for avoiding conflicts with C++11
-  apt-get install gcc-9 g++-9
   update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90
   update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
   success "Using GCC 9 to compile."
