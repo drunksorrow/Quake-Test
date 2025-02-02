@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 # quakeinstall-root.sh - quake live dedicated server installation for root user.
 
 # Culori pentru mesaje
@@ -103,7 +103,18 @@ else
 fi
 
 echo "Installing pyzmq via pip3..."
-pip3 install pyzmq
+# Instalare pyzmq în mediul global sau într-un mediu virtual
+# Verifică dacă se află într-un mediu virtual și instalează pyzmq acolo
+if ! python3 -c 'import sys; print(sys.prefix)' | grep -q "env"; then
+  echo "Not in a virtual environment, installing pyzmq globally."
+  pip3 install pyzmq
+else
+  echo "Inside virtual environment, installing pyzmq in venv."
+  source venv/bin/activate
+  pip install pyzmq
+  deactivate
+fi
+
 if [ $? -eq 0 ]; then
   success "pyzmq installed successfully."
 else
