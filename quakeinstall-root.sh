@@ -117,7 +117,7 @@ else
 fi
 
 echo "Activating Python virtual environment and installing pyzmq..."
-source /opt/qlserver-venv/bin/activate && pip install pyzmq
+. /opt/qlserver-venv/bin/activate && pip install pyzmq
 if [ $? -eq 0 ]; then
   success "pyzmq installed successfully."
 else
