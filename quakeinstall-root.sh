@@ -23,8 +23,8 @@ error() {
   exit 1
 }
 
-if [ "$EUID" -ne 0 ]
-  then error "Please run under user 'root'."
+if [ "$EUID" -ne 0 ]; then
+  error "Please run under user 'root'."
 fi
 
 echo "Updating 'apt-get'..."
@@ -36,7 +36,7 @@ else
 fi
 
 echo "Installing packages..."
-apt-get -y install apache2 python3 python-setuptools curl nano samba build-essential python-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
@@ -80,7 +80,7 @@ else
 fi
 
 echo "Stopping the Samba services..."
-/etc/init.d/samba stop
+systemctl stop smbd
 if [ $? -eq 0 ]; then
   success "Samba services stopped successfully."
 else
@@ -104,7 +104,7 @@ else
 fi
 
 echo "Starting the Samba services..."
-/etc/init.d/samba start
+systemctl start smbd
 if [ $? -eq 0 ]; then
   success "Samba services started successfully."
 else
