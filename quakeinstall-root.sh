@@ -36,7 +36,7 @@ else
 fi
 
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip g++-12
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip g++-12 libbsd-dev libunwind-dev
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
@@ -110,6 +110,10 @@ EOL
   else
     warn "Failed to apply additional patch. Continuing without patch..."
   fi
+
+  # Dezactivăm -Werror în Makefile
+  sed -i 's/-Werror//g' Makefile.am
+  sed -i 's/-Werror//g' Makefile.in
 
   ./configure --without-libsodium
   if [ $? -eq 0 ]; then
