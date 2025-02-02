@@ -21,10 +21,10 @@ success "Actualizare 'apt-get'..."
 apt-get update || error "Eșec la actualizarea pachetelor!"
 
 success "Instalare pachete necesare..."
-apt-get -y install apache2 python3 python3-setuptools lib32gcc-s1 curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev || error "Eșec la instalarea pachetelor!"
+apt-get -y install apache2 python3 python3-pip python3-setuptools lib32gcc-s1 curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 libzmq3-dev || error "Eșec la instalarea pachetelor!"
 
-success "Instalare ZeroMQ (folosind apt)..."
-pip install pyzmq || error "Eșec la instalarea pyzmq!"
+success "Instalare ZeroMQ (folosind pip3)..."
+pip3 install pyzmq || error "Eșec la instalarea pyzmq!"
 
 success "Adăugare utilizator 'qlserver'..."
 useradd -m qlserver && usermod -a -G sudo qlserver && chsh -s /bin/bash qlserver || error "Eșec la adăugarea utilizatorului!"
