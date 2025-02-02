@@ -36,7 +36,7 @@ else
 fi
 
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip libtool pkg-config
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
@@ -68,6 +68,13 @@ fi
 
 if [ -d "$ZMQ_DIR" ]; then
   cd "$ZMQ_DIR"
+  
+  # Instalare GCC mai vechi pentru evitarea conflictelor cu C++11
+  apt-get install gcc-9 g++-9
+  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90
+  update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
+  success "Using GCC 9 to compile."
+
   ./configure --without-libsodium
   if [ $? -eq 0 ]; then
     success "ZeroMQ configured successfully."
