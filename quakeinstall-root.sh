@@ -36,7 +36,7 @@ else
 fi
 
 echo "Installing packages..."
-apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1
+apt-get -y install apache2 python3 python3-setuptools curl nano samba build-essential python3-dev unzip dos2unix mailutils wget lib32z1 lib32stdc++6 libc6 lib32gcc-s1 python3-pip
 if [ $? -eq 0 ]; then
   success "Packages installed successfully."
 else
@@ -44,19 +44,63 @@ else
 fi
 
 echo "Installing ZeroMQ library..."
-wget http://download.zeromq.org/zeromq-4.1.4.tar.gz
-tar -xvzf zeromq-4.1.4.tar.gz
-rm zeromq-4.1.4.tar.gz
-cd zeromq*
-./configure --without-libsodium
-make install
-cd ..
-rm -r zeromq*
-easy_install pyzmq
+ZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v4.1.4/zeromq-4.1.4.tar.gz"
+ZMQ_FILE="zeromq-4.1.4.tar.gz"
+ZMQ_DIR="zeromq-4.1.4"
+
+wget "$ZMQ_URL" -O "$ZMQ_FILE"
 if [ $? -eq 0 ]; then
-  success "ZeroMQ library installed successfully."
+  success "ZeroMQ downloaded successfully."
 else
-  error "Failed to install ZeroMQ library."
+  error "Failed to download ZeroMQ."
+fi
+
+if [ -f "$ZMQ_FILE" ]; then
+  tar -xvzf "$ZMQ_FILE"
+  if [ $? -eq 0 ]; then
+    success "ZeroMQ extracted successfully."
+  else
+    error "Failed to extract ZeroMQ."
+  fi
+else
+  error "ZeroMQ archive not found."
+fi
+
+if [ -d "$ZMQ_DIR" ]; then
+  cd "$ZMQ_DIR"
+  ./configure --without-libsodium
+  if [ $? -eq 0 ]; then
+    success "ZeroMQ configured successfully."
+  else
+    error "Failed to configure ZeroMQ."
+  fi
+
+  make
+  if [ $? -eq 0 ]; then
+    success "ZeroMQ built successfully."
+  else
+    error "Failed to build ZeroMQ."
+  fi
+
+  make install
+  if [ $? -eq 0 ]; then
+    success "ZeroMQ installed successfully."
+  else
+    error "Failed to install ZeroMQ."
+  fi
+
+  cd ..
+  rm -rf "$ZMQ_FILE" "$ZMQ_DIR"
+else
+  error "ZeroMQ directory not found."
+fi
+
+echo "Installing pyzmq via pip3..."
+pip3 install pyzmq
+if [ $? -eq 0 ]; then
+  success "pyzmq installed successfully."
+else
+  error "Failed to install pyzmq."
 fi
 
 echo "Adding user 'qlserver'..."
