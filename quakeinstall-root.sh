@@ -103,22 +103,27 @@ else
 fi
 
 echo "Installing pyzmq via pip3..."
-# Instalare pyzmq în mediul global sau într-un mediu virtual
-# Verifică dacă se află într-un mediu virtual și instalează pyzmq acolo
+
+# Check if the system is in a virtual environment or not
 if ! python3 -c 'import sys; print(sys.prefix)' | grep -q "env"; then
   echo "Not in a virtual environment, installing pyzmq globally."
-  pip3 install pyzmq
+  # Installing pyzmq system-wide using apt to avoid "externally-managed-environment" error
+  apt-get install python3-pyzmq
+  if [ $? -eq 0 ]; then
+    success "pyzmq installed successfully."
+  else
+    error "Failed to install pyzmq via apt."
+  fi
 else
   echo "Inside virtual environment, installing pyzmq in venv."
   source venv/bin/activate
   pip install pyzmq
   deactivate
-fi
-
-if [ $? -eq 0 ]; then
-  success "pyzmq installed successfully."
-else
-  error "Failed to install pyzmq."
+  if [ $? -eq 0 ]; then
+    success "pyzmq installed successfully in virtual environment."
+  else
+    error "Failed to install pyzmq in virtual environment."
+  fi
 fi
 
 echo "Adding user 'qlserver'..."
