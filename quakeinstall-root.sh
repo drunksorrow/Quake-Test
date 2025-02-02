@@ -98,7 +98,7 @@ index 1e5f5f5..f8e5f5f 100644
          uint64_t *value_ = static_cast<uint64_t *> (value);
          for (int i = 0; i < 2; i++) {
 -            if (value_ && value_ + i)
-+            if (value_ && (value_ + i))
++            if (value_ && (value_ + i) != nullptr)
                  value_[i] = static_cast<uint64_t> (ntohll (value_[i]));
          }
      }
