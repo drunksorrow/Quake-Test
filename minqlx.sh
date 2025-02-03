@@ -1,30 +1,45 @@
 #!/bin/bash
 
-set -e  # Opreste scriptul daca apare o eroare
-
-# Update si instalare dependinte
+# Actualizarea listei de pachete
 sudo apt-get update
-sudo apt-get -y install python3 python3-dev redis-server git build-essential
 
-# Verificare versiune Python
+# Instalarea Python 3 și dezvoltarea Python 3
+sudo apt-get -y install python3 python3-dev
+
+# Afișarea versiunii Python 3 instalate
 python3 --version
 
-# Navigare in directorul serverului si clonare minqlx
+# Instalarea Redis Server, Git și build-essential
+sudo apt-get -y install redis-server git build-essential
+
+# Navigarea în directorul specificat
 cd /home/qlserver/steamcmd/steamapps/common/qlds
+
+# Clonarea depozitului minqlx
 git clone https://github.com/MinoMino/minqlx.git
 cd minqlx
+
+# Compilarea minqlx
 make
 
-# Copiere binare minqlx
-cp -r bin/* ../
+# Copierea tuturor fișierelor din minqlx/bin în directorul specificat
+cp -r bin/* /home/qlserver/steamcmd/steamapps/common/qlds/
 
-# Navigare inapoi si clonare minqlx-plugins
+# Navigarea înapoi în directorul specificat
 cd /home/qlserver/steamcmd/steamapps/common/qlds
+
+# Clonarea depozitului minqlx-plugins
 git clone https://github.com/MinoMino/minqlx-plugins.git
 
-# Instalare pip si dependinte
+# Descărcarea și instalarea pip
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python3 get-pip.py --break-system-packages
 rm get-pip.py
+
+# Setarea variabilei de mediu pentru a permite instalarea pachetelor Python care pot afecta sistemul
 export PIP_BREAK_SYSTEM_PACKAGES=1
+
+# Instalarea dependențelor necesare pentru minqlx-plugins
 sudo python3 -m pip install --break-system-packages -r minqlx-plugins/requirements.txt
+
+echo "Scriptul a fost executat cu succes!"
